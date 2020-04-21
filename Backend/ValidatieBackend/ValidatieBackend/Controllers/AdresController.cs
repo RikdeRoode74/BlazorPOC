@@ -46,7 +46,8 @@ namespace ValidatieBackend.Controllers
             }
 
             var id = await Service.CreateAdres(model);
-            return CreatedAtAction(nameof(Get), new {id});
+
+            return CreatedAtAction(nameof(Get), new {id = id}, model);
         }
 
         [HttpPut]

@@ -39,15 +39,15 @@ namespace ValidatiePOC
                 return result;
         }
 
-
         public async void Post<T>(string requestUri, T model)
         {
-            using var client = new HttpClient();
+            using var http = httpFactory.CreateClient();
+            http.BaseAddress = baseAddress;
             using var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
             using var httpContent = CreateHttpContent(model);
             request.Content = httpContent;
 
-            using var response = await client
+            using var response = await http
                 .SendAsync(request, HttpCompletionOption.ResponseHeadersRead)
                 .ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
@@ -55,12 +55,13 @@ namespace ValidatiePOC
 
         public async void Put<T>(string requestUri, T model)
         {
-            using var client = new HttpClient();
+            using var http = httpFactory.CreateClient();
+            http.BaseAddress = baseAddress;
             using var request = new HttpRequestMessage(HttpMethod.Put, requestUri);
             using var httpContent = CreateHttpContent(model);
             request.Content = httpContent;
 
-            using var response = await client
+            using var response = await http
                 .SendAsync(request, HttpCompletionOption.ResponseHeadersRead)
                 .ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
