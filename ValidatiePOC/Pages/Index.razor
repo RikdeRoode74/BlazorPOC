@@ -1,5 +1,83 @@
 ﻿@page "/"
+@using ValidatiePOC
+@inject IBackendWebApi WebApi
+@inject NavigationManager NavigationManager
 
-<h1>Hello, world!</h1>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="mx-auto"><h1>adressen</h1></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-9">
+                <div class="card-columns">
+                    @if (model != null)
+                    {
+                        foreach (var adres in model)
+                        {
+                            if (adres.IsBinnenlands)
+                            {
+                                <div class="card" @onclick="(() => OpenAdres(adres.Id))">
+                                    <div class="card-header bg-primary">adres</div>
+                                    <div class="card-body">
+                                        <div>@adres.Straat @adres.Huisnummer @adres.HuisnummerToevoeging</div>
+                                        <div>@adres.PostCode @adres.Gemeente</div>
+                                        <div>@adres.Land</div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="card" @onclick="(() => OpenAdres(adres.Id))">
+                                    <div class="card-header bg-warning">buitenlands adres</div>
+                                    <div class="card-body">
+                                        <div>@adres.AdresRegel1</div>
+                                        <div>@adres.PostCode @adres.AdresRegel2</div>
+                                        <div>@adres.Land</div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="row">
+                    <button class="btn btn-primary" @onclick="NieuwAdres">nieuw adres</button>
+                </div>
+                <div id="CreateAdres" class="row @CreateAdresCollapse">
+                    <Adres AdresId="@adresId"/>
+                </div>
+            </div>
+        </div>
+    </div>
+@code {
+    private List<AdresModel> model;
+    private bool showCreateAdres;
+    private string CreateAdresCollapse => showCreateAdres ? "": "collapse";
+    private int? adresId = null;
 
-WelcoMe to your new app.
+    protected override async Task OnInitializedAsync()
+    {
+        model = await WebApi.Get<List<AdresModel>>("Adressen");
+    }
+
+    private void OpenAdres(int id)
+    {
+        adresId = id;
+        showCreateAdres = true;
+    }
+
+    private void NieuwAdres()
+    {
+        if (adresId != null || !showCreateAdres)
+        {
+            adresId = null;
+            showCreateAdres = true;
+        }
+        else
+        {
+            adresId = null;
+            showCreateAdres = false;
+        }
+    }
+}

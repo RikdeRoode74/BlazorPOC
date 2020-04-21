@@ -1,12 +1,11 @@
-﻿@page "/Adres"
-@using ValidatiePOC
+﻿@using ValidatiePOC
 @inject IBackendWebApi WebApi
 
 @if (model != null)
 {
     <EditForm Model="model" OnValidSubmit="HandleValidSubmit">
         <FluentValidator Validator="validator"></FluentValidator>
-        <div class="@(model.IsBinnenlands ? "" : "inactief")">
+        <div class="@(model.IsBinnenlands ? "" : "collapse")">
             <RsInputText @bind-Value="model.Straat" ValidationFor="@(() => model.Straat)" Label="Straat"/>
             <RsInputText @bind-Value="model.Huisnummer" ValidationFor="@(() => model.Huisnummer)" Label="Huisnummer"/>
             <RsInputText @bind-Value="model.HuisnummerToevoeging" ValidationFor="@(() => model.HuisnummerToevoeging)" Label="HuisnummerToevoeging"/>
@@ -14,7 +13,7 @@
             <RsInputText @bind-Value="model.Gemeente" ValidationFor="@(() => model.Gemeente)" Label="Gemeente"/>
             <RsInputText @bind-Value="model.Land" ValidationFor="@(() => model.Land)" Label="Land"/>
         </div>
-        <div class="@(model.IsBinnenlands ? "inactief" : "")">
+        <div class="@(model.IsBinnenlands ? "collapse" : "")">
             <RsInputText @bind-Value="model.AdresRegel1" ValidationFor="@(() => model.AdresRegel1)" Label="AdresRegel1"/>
             <RsInputText @bind-Value="model.AdresRegel2" ValidationFor="@(() => model.AdresRegel2)" Label="AdresRegel2"/>
             <RsInputText @bind-Value="model.PostCode" ValidationFor="@(() => model.PostCode)" Label="PostCode"/>
@@ -26,16 +25,18 @@
     </EditForm>
 }
 @code {
+    [Parameter]
+    public int? AdresId { get; set; }
+
     private AdresModel model;
     private AdresValidator validator;
 
     protected override async Task OnInitializedAsync()
     {
-        model = await WebApi.Get<AdresModel>("Adres/1");
-        validator = new AdresValidator();
+        await Reset();
     }
 
-    public void HandleValidSubmit()
+    public async void HandleValidSubmit()
     {
         if (model.Id == 0)
         {
@@ -45,5 +46,19 @@
         {
             WebApi.Put("Adres", model);
         }
+        await Reset();
+    }
+
+    private async Task Reset()
+    {
+        if (AdresId.HasValue)
+        {
+            model = await WebApi.Get<AdresModel>($"Adres/{AdresId.Value}");
+        }
+        else
+        {
+            model = new AdresModel();
+        }
+        validator = new AdresValidator();
     }
 }
