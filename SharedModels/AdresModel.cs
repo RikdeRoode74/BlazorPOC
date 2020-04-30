@@ -22,9 +22,9 @@ namespace SharedModels
     {
         public AdresValidator()
         {
-            RuleFor(a => a.Huisnummer).NotEmpty().ExclusiveBetween(0, 100000);
+            RuleFor(a => a.Huisnummer).Must(BeUsedInNederland);
             RuleFor(a => a.HuisnummerToevoeging).MaximumLength(10);
-            RuleFor(a => a.PostCode).NotEmpty().Must(BeAValidPostcode).WithMessage(a => $"Gebruik een voor {(string.IsNullOrEmpty(a.Land) ? "Nederland" : a.Land)} geldige postcode.");
+            RuleFor(a => a.PostCode).Must(BeAValidPostcode).WithMessage(a => $"Gebruik een voor {(string.IsNullOrEmpty(a.Land) ? "Nederland" : a.Land)} geldige postcode.");
             RuleFor(a => a.Straat).MaximumLength(255).Must(BeUsedInNederland).WithMessage("Straat is verplicht.");
             RuleFor(a => a.AdresRegel1).MaximumLength(255).Must(BeValidAdresRegel1ForLand).WithMessage("Eerste adresregel is verplicht.");
             RuleFor(a => a.AdresRegel2).MaximumLength(255);
@@ -54,6 +54,15 @@ namespace SharedModels
             return true;
         }
 
+        private bool BeUsedInNederland(AdresModel adres, int huisnummer)
+        {
+            if (string.IsNullOrEmpty(adres.Land) || adres.Land.ToLower() == "nederland")
+            {
+                return huisnummer > 0 && huisnummer < 1000000;
+            }
+            return true;
+        }
+
         private bool BeValidAdresRegel1ForLand(AdresModel adres, string adresRegel1)
         {
             if (string.IsNullOrEmpty(adres.Land) || adres.Land.ToLower() == "nederland")
@@ -77,12 +86,14 @@ namespace SharedModels
 
         private bool IsDuitsePostcode(string postcode)
         {
+            if (postcode == null) return false;
             var pc = postcode.Replace(" ", "");
             return pc.Length == 5 && postcode.All(char.IsDigit);
         }
 
         private bool IsWereldPostcode(string postcode)
         {
+            if (postcode == null) return false;
             return postcode.Length <= 15;
         }
     }

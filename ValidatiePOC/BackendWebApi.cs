@@ -11,7 +11,7 @@ namespace ValidatiePOC
     public interface IBackendWebApi
     {
         Task<T> Get<T>(string requestUri) where T : new();
-        void Post<T>(string requestUri, T model);
+        Task<T> Post<T>(string requestUri, T model);
         void Put<T>(string requestUri, T model);
         void Delete(string requestUri);
     }
@@ -39,7 +39,7 @@ namespace ValidatiePOC
                 return result;
         }
 
-        public async void Post<T>(string requestUri, T model)
+        public async Task<T> Post<T>(string requestUri, T model)
         {
             using var http = httpFactory.CreateClient();
             http.BaseAddress = baseAddress;
@@ -51,6 +51,10 @@ namespace ValidatiePOC
                 .SendAsync(request, HttpCompletionOption.ResponseHeadersRead)
                 .ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
+
+            var responseContent = await response.Content.ReadAsStreamAsync();
+            var result = DeserializeJsonFromStream<T>(responseContent);
+            return result;
         }
 
         public async void Put<T>(string requestUri, T model)

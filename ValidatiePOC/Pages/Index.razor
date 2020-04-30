@@ -5,7 +5,11 @@
 
     <div class="container-fluid">
         <div class="row">
-            <div class="mx-auto"><h1>adressen</h1></div>
+            <div class="col-lg-9"><div class="text-center"><h1>adressen</h1></div></div>
+            <div class="col-lg-3">
+                <button class="btn btn-primary" @onclick="NieuwAdres">nieuw adres</button>
+                <button class="btn btn-primary" @onclick="Cancel">Cancel</button>
+            </div>
         </div>
         <div class="row">
             <div class="col-lg-9">
@@ -41,11 +45,10 @@
                 </div>
             </div>
             <div class="col-lg-3">
-                <div class="row">
-                    <button class="btn btn-primary" @onclick="NieuwAdres">nieuw adres</button>
-                </div>
                 <div id="CreateAdres" class="row @CreateAdresCollapse">
-                    <Adres AdresId="@adresId"/>
+                    <CascadingValue Value="currentModel">
+                        <Adres AdresFinished="AdresFinished"/>
+                    </CascadingValue>
                 </div>
             </div>
         </div>
@@ -54,7 +57,7 @@
     private List<AdresModel> model;
     private bool showCreateAdres;
     private string CreateAdresCollapse => showCreateAdres ? "": "collapse";
-    private int? adresId = null;
+    private AdresModel currentModel;
 
     protected override async Task OnInitializedAsync()
     {
@@ -63,21 +66,26 @@
 
     private void OpenAdres(int id)
     {
-        adresId = id;
+        currentModel = model.Single(a => a.Id == id);
         showCreateAdres = true;
     }
 
     private void NieuwAdres()
     {
-        if (adresId != null || !showCreateAdres)
-        {
-            adresId = null;
-            showCreateAdres = true;
-        }
-        else
-        {
-            adresId = null;
-            showCreateAdres = false;
-        }
+        currentModel = new AdresModel();
+        showCreateAdres = true;
+    }
+
+    private void Cancel()
+    {
+        showCreateAdres = false;
+    }
+
+    private void AdresFinished(AdresModel newAdres)
+    {
+        if (newAdres != null) model.Add(newAdres);
+        currentModel = new AdresModel();
+        showCreateAdres = false;
+        StateHasChanged();
     }
 }
